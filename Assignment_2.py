@@ -84,6 +84,7 @@ reader.SetFileName(path_image);
 reader.Update();
 
 #Print scalar range
+vtk_visualize(reader.GetOutputPort(), name="original image")
 print('original: ', reader.GetOutput().GetPointData().GetScalars().GetRange())
 
 min_value = min(reader.GetOutput().GetPointData().GetScalars().GetRange())
@@ -95,13 +96,31 @@ math.SetOperationToAddConstant()
 math.SetConstantC(abs(min_value))
 math.Update()
 
+shifted = vtk.vtkImageData()
+shifted.DeepCopy(math.GetOutput())
 
-labelvalue = 255
-background = 0
+print('shifted: ', shifted.GetPointData().GetScalars().GetRange())
+
+labelvalue = max(shifted.GetPointData().GetScalars().GetRange())
+background = min(shifted.GetPointData().GetScalars().GetRange())
 thresh = vtk.vtkImageThreshold()
-thresh.SetInputData(masterImageData)
-thresh.ThresholdBetween(min, max)
-thresh.SetInValue(labelvalue)
+thresh.SetInputData(img_data)
+thresh.ThresholdBetween(200,900)
 thresh.SetOutValue(background)
-thresh.SetOutputScalarType(editedLabelmap.GetScalarType())
+#thresh.SetInValue(labelvalue)
+thresh.SetOutputScalarType(img_data.GetScalarType())
 thresh.Update()
+
+vtk_visualize(source=thresh.GetOutputPort(), name="threshold")
+print('threshold: ', thresh.GetOutput().GetPointData().GetScalars().GetRange())
+
+lut = vtk.vtkLookupTable()
+lut.SetHueRange(0.0, 0.1)
+lut.SetAlphaRange(0,1)
+lut.Build()
+
+
+
+print(lut)
+vtk_visualize_pw(isource=)
+

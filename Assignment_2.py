@@ -98,8 +98,6 @@ reader = vtk.vtkXMLImageDataReader()
 reader.SetFileName(path_image);
 reader.Update();
 
-print(reader.GetOutput())
-
 #Print scalar range
 vtk_visualize(reader.GetOutput(), name="original image")
 print('original: ', reader.GetOutput().GetPointData().GetScalars().GetRange())
@@ -140,5 +138,5 @@ plane = []
 plane.append(vtk.vtkImagePlaneWidget())
 plane.append(vtk.vtkImagePlaneWidget())
 
-syncImgSeg(planes=plane, isource=(reader.GetOutput(), thresh.GetOutput()),ilut=(None,lut),name="Segmentation")
+syncImgSeg(planes=plane, source=(reader.GetOutput(), thresh.GetOutput()),lut=(None,lut),name="Segmentation")
 

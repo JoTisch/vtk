@@ -4,60 +4,53 @@ def vtk_visualize(source,
 				  name
 ):
 	"""
-	:param source:
-	:param name:
-	:return:
+	:param source: source of image --type: vtk.GetOutput()
+	:param name: name of image -- type: str
 	"""
-	#Create an image actor to display the image
-	imageActor = vtk.vtkImageActor()
-	mapper = imageActor.GetMapper()
-	#TODO: type of input
-	if source is not None:
-		mapper.SetInputConnection(source)
-	else:
-		mapper.SetInputConnection(source)
-	# Setup renderer
+	# TODO: Print name over image
+
 	renderer = vtk.vtkRenderer()
-	renderer.AddActor(imageActor)
 	renderer.ResetCamera()
 	renderer.ResetCameraClippingRange()
+	renderer.SetBackground(0, 0, 0)
 
-	# Setup render window
 	renderWindow = vtk.vtkRenderWindow()
 	renderWindow.AddRenderer(renderer)
 	renderWindow.SetSize(1280, 1024)
 	renderWindow.SetWindowName(name)
 
-	# Setup render window interactor
-	renderWindowInteractor = vtk.vtkRenderWindowInteractor()
-	style = vtk.vtkInteractorStyleImage()
-	renderWindowInteractor.SetInteractorStyle(style)
+	iren = vtk.vtkRenderWindowInteractor()
+	iren.SetRenderWindow(renderWindow)
 
-	# Render and start interaction
-	renderWindowInteractor.SetRenderWindow(renderWindow)
+	plane = vtk.vtkImagePlaneWidget()
+	plane.SetInteractor(iren)
+	plane.SetInputData(source)
+	plane.SetOrigin((0, 0, 0))
+	plane.SetPlaneOrientationToZAxes()
+	plane.UpdatePlacement()
+	plane.PlaceWidget()
+	plane.On()
+
+	iren.Initialize()
 	renderWindow.Render()
-	renderWindowInteractor.Initialize()
-	renderWindowInteractor.Start()
-
-
-def syncImgSeg(isource,
-					 planes,
-					 ilut=None,
-					 name=None,
+	iren.Start()
+	
+def syncImgSeg(source,
+			   planes,
+			   lut=None,
+			   name=None,
 ):
 	"""
-	:param isource:
-	:param planes:
-	:param ilut:
-	:param name:
-	:return:
+	:param source: source of image -- type: vtk.GetOutput()
+	:param planes: vtkImagePlaneWidget() -- type: list
+	:param lut: look-up table -- type: table
+	:param name: name of image -- type: str
 	"""
 
 	def syncPlane(obj, event):
 		"""
-		:param obj:
+		:param obj: 
 		:param event:
-		:return:
 		"""
 		value = int(obj.GetSliceIndex())
 		planes[0].SetSliceIndex(value)
@@ -71,10 +64,10 @@ def syncImgSeg(isource,
 	iren = vtk.vtkRenderWindowInteractor()
 	iren.SetRenderWindow(renderWindow)
 
-	for i in range(0,len(isource)):
+	for i in range(0,len(source)):
 		planes[i].SetInteractor(iren)
-		planes[i].SetLookupTable(ilut[i])
-		planes[i].SetInputData(isource[i])
+		planes[i].SetLookupTable(lut[i])
+		planes[i].SetInputData(source[i])
 		planes[i].SetOrigin((0, 0, 0))
 		planes[i].SetPlaneOrientationToZAxes()
 		if i == 1:
@@ -90,7 +83,6 @@ def syncImgSeg(isource,
 	renderer.SetBackground(0, 0, 0)
 	renderWindow.SetSize(1280, 1024)
 	renderWindow.SetWindowName(name)
-	#renderer.SetBackground(0.1, 0.2, 0.4)
 
 	iren.Initialize()
 	renderWindow.Render()
@@ -106,8 +98,10 @@ reader = vtk.vtkXMLImageDataReader()
 reader.SetFileName(path_image);
 reader.Update();
 
+print(reader.GetOutput())
+
 #Print scalar range
-vtk_visualize(reader.GetOutputPort(), name="original image")
+vtk_visualize(reader.GetOutput(), name="original image")
 print('original: ', reader.GetOutput().GetPointData().GetScalars().GetRange())
 
 min_value = min(reader.GetOutput().GetPointData().GetScalars().GetRange())
@@ -134,7 +128,7 @@ thresh.SetOutValue(background)
 thresh.SetOutputScalarType(img_data.GetScalarType())
 thresh.Update()
 
-vtk_visualize(source=thresh.GetOutputPort(), name="threshold")
+vtk_visualize(source=thresh.GetOutput(), name="threshold")
 print('threshold: ', thresh.GetOutput().GetPointData().GetScalars().GetRange())
 
 lut = vtk.vtkLookupTable()

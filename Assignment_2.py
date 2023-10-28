@@ -40,16 +40,16 @@ def vtk_visualize(source,
 	renderWindowInteractor.Initialize()
 	renderWindowInteractor.Start()
 
-def syncPlane(obj, event):
-	value = int(obj.GetSliceIndex())
-	plane2.SetSliceIndex(value)
 
 def vtk_visualize_pw(isource,
-					 plane1,
-					 plane2, 
+					 planes,
 					 ilut=None,
 					 name=None,
 ):
+
+	def syncPlane(obj, event):
+		value = int(obj.GetSliceIndex())
+		planes[0].SetSliceIndex(value)
 
 	renderWindow = vtk.vtkRenderWindow()
 	renderer = vtk.vtkRenderer()
@@ -60,33 +60,21 @@ def vtk_visualize_pw(isource,
 	iren = vtk.vtkRenderWindowInteractor()
 	iren.SetRenderWindow(renderWindow)
 
-	plane1.SetInteractor(iren)
-	plane1.SetLookupTable(ilut[0])
-	plane1.SetInputData(isource[0])
-	plane1.SetOrigin((0, 0, 0))
-	plane1.SetPlaneOrientationToZAxes()
-	plane1.AddObserver("InteractionEvent", syncPlane)
-	plane1.UpdatePlacement()
-	plane1.DisplayTextOn()
-	plane1.SetLeftButtonAction(1)
-	plane1.SetMiddleButtonAction(2)
-	plane1.SetRightButtonAction(0)
-	plane1.PlaceWidget()
-	plane1.On()
-
-
-	plane2.SetInteractor(iren)
-	plane2.SetLookupTable(ilut[1])
-	plane2.SetInputData(isource[1])
-	plane2.SetOrigin((0, 0, 0))
-	plane2.SetPlaneOrientationToZAxes()
-	plane2.UpdatePlacement()
-	plane2.DisplayTextOn()
-	plane2.SetLeftButtonAction(1)
-	plane2.SetMiddleButtonAction(2)
-	plane2.SetRightButtonAction(0)
-	plane2.PlaceWidget()
-	plane2.On()
+	for i in range(0,len(isource)):
+		planes[i].SetInteractor(iren)
+		planes[i].SetLookupTable(ilut[i])
+		planes[i].SetInputData(isource[i])
+		planes[i].SetOrigin((0, 0, 0))
+		planes[i].SetPlaneOrientationToZAxes()
+		if i == 1:
+			planes[i].AddObserver("InteractionEvent", syncPlane)
+		planes[i].UpdatePlacement()
+		planes[i].DisplayTextOn()
+		planes[i].SetLeftButtonAction(1)
+		planes[i].SetMiddleButtonAction(2)
+		planes[i].SetRightButtonAction(0)
+		planes[i].PlaceWidget()
+		planes[i].On()
 
 	renderer.SetBackground(0, 0, 0)
 	renderWindow.SetSize(1280, 1024)
@@ -142,8 +130,9 @@ lut.SetHueRange(0.0, 0.1)
 lut.SetAlphaRange(0,1)
 lut.Build()
 
-plane1 = vtk.vtkImagePlaneWidget()
-plane2 = vtk.vtkImagePlaneWidget()
+plane = []
+plane.append(vtk.vtkImagePlaneWidget())
+plane.append(vtk.vtkImagePlaneWidget())
 
-vtk_visualize_pw(plane1=plane1, plane2=plane2, isource=(reader.GetOutput(), thresh.GetOutput()),ilut=(None,lut),name="Segmentation")
+vtk_visualize_pw(planes=plane, isource=(reader.GetOutput(), thresh.GetOutput()),ilut=(None,lut),name="Segmentation")
 

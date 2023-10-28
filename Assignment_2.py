@@ -1,6 +1,5 @@
 import vtk
 
-
 def vtk_visualize(source,
 				  name
 ):
@@ -41,13 +40,25 @@ def vtk_visualize(source,
 	renderWindowInteractor.Start()
 
 
-def vtk_visualize_pw(isource,
+def syncImgSeg(isource,
 					 planes,
 					 ilut=None,
 					 name=None,
 ):
+	"""
+	:param isource:
+	:param planes:
+	:param ilut:
+	:param name:
+	:return:
+	"""
 
 	def syncPlane(obj, event):
+		"""
+		:param obj:
+		:param event:
+		:return:
+		"""
 		value = int(obj.GetSliceIndex())
 		planes[0].SetSliceIndex(value)
 
@@ -86,6 +97,7 @@ def vtk_visualize_pw(isource,
 	iren.Start()
 "--------------------------------------------------------------------------------"
 "--------------------------------------------------------------------------------"
+
 #Relative path
 path_image = "./Data_Assignment2/aneurysm.vti"
 
@@ -134,5 +146,5 @@ plane = []
 plane.append(vtk.vtkImagePlaneWidget())
 plane.append(vtk.vtkImagePlaneWidget())
 
-vtk_visualize_pw(planes=plane, isource=(reader.GetOutput(), thresh.GetOutput()),ilut=(None,lut),name="Segmentation")
+syncImgSeg(planes=plane, isource=(reader.GetOutput(), thresh.GetOutput()),ilut=(None,lut),name="Segmentation")
 
